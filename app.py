@@ -72,24 +72,10 @@ if auth_status:
     raw_filtered = filter_data_sequentially(raw_filtered, start_date=start_date, end_date=end_date)
 
     # Get unique product information for the selected Syuyaku
-    raw_unique = raw.unique(subset=['Department', 'Syuyaku', 'SKU', 'Color', 'Size', 'Length'])
+    raw_unique = raw.unique(subset=['Department', 'Syuyaku', 'SKU', 'Color', 'Size', 'Length']).select(['Department', 'Syuyaku', 'Tanpin', 'Color', 'Size', 'Length']))
     ProductInfo = raw_unique.filter(pl.col('Syuyaku') == selected_Syuyaku)
     ProductInfoDF = ProductInfo.to_pandas()
-    # First check what columns we have
-    print("Debug - Current columns:", ProductInfoDF.columns.tolist())
-    
-    # Make sure we have the right number of column names
-    column_mapping = {
-        'Department': '部門',
-        'Syuyaku': '販売集約',
-        'SKU': '単品',
-        'Color': 'カラー',
-        'Size': 'サイズ',
-        'Length': 'レングス'
-    }
-    
-    # Rename only the columns that exist
-    ProductInfoDF = ProductInfoDF.rename(columns=column_mapping)
+    ProductInfoDF.columns = ['部門', '販売集約', '単品', 'カラー',  'サイズ',  'レングス']
 
     # Filter summary tables for selected Syuyaku
     AccuracySummaryDF = AccuracySummary.query('Syuyaku == @selected_Syuyaku').iloc[:, 1:]
