@@ -4,6 +4,7 @@ import streamlit_shadcn_ui as ui
 import numpy as np # データ処理
 import polars as pl
 import pandas as pd
+import time
 from modules.data_loader import load_data
 from modules.data_processor import get_most_syuyaku, get_sorted_unique_values, filter_data_sequentially
 from modules.visualizer import create_dashboard_figure
