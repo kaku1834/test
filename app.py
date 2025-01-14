@@ -23,44 +23,45 @@ if auth_status:
     most_syuyaku_Brand, most_syuyaku_Region, most_syuyaku_Department, most_syuyaku_SubCategory, most_syuyaku = get_most_syuyaku(raw)
     
     # Your filtering code now uses the imported functions
+
     # フィルタ1: 事業を選択
     sorted_Brand = get_sorted_unique_values(raw, 'Brand')
-    selected_Brand = st.sidebar.selectbox("グローバル事業", sorted_Brand, index = sorted_Brand.index(most_syuyaku_Brand))
+    selected_Brand = st.sidebar.selectbox("グローバル事業", sorted_Brand, index = sorted_Brand.index(most_syuyaku_Brand), key="brand_select")
     raw_filtered = filter_data_sequentially(raw, selected_Brand=selected_Brand)
 
     # フィルタ2: 事業を選択した上で、国を選択
     sorted_Region = get_sorted_unique_values(raw_filtered, 'Region')
-    selected_Region = st.sidebar.selectbox("事業国", sorted_Region, index = sorted_Region.index(most_syuyaku_Region))
+    selected_Region = st.sidebar.selectbox("事業国", sorted_Region, index = sorted_Region.index(most_syuyaku_Region), key="region_select")
     raw_filtered = filter_data_sequentially(raw_filtered, selected_Region=selected_Region)
 
     # フィルタ3: 事業と国選択した上で、部門を選択
     sorted_Department = get_sorted_unique_values(raw_filtered, 'Department')
-    selected_Department = st.sidebar.selectbox("部門", sorted_Department, index = sorted_Department.index(most_syuyaku_Department))
+    selected_Department = st.sidebar.selectbox("部門", sorted_Department, index = sorted_Department.index(most_syuyaku_Department), key="dept_select")
     raw_filtered = filter_data_sequentially(raw_filtered, selected_Department=selected_Department)
 
     # フィルタ4: 事業、国、部門を選択した上で、サブカテゴリを選択
     sorted_SubCategory = get_sorted_unique_values(raw_filtered, 'SubCategory')
-    selected_SubCategory = st.sidebar.selectbox("サブカテゴリ", sorted_SubCategory, index = sorted_SubCategory.index(most_syuyaku_SubCategory))
+    selected_SubCategory = st.sidebar.selectbox("サブカテゴリ", sorted_SubCategory, index = sorted_SubCategory.index(most_syuyaku_SubCategory), key="subcat_select")
     raw_filtered = filter_data_sequentially(raw_filtered, selected_SubCategory=selected_SubCategory)
 
     # フィルタ5: すべての以前の選択に基づいた集約の選択
     sorted_Syuyaku = get_sorted_unique_values(raw_filtered, 'Syuyaku')
-    selected_Syuyaku = st.sidebar.selectbox("販売集約", sorted_Syuyaku)
+    selected_Syuyaku = st.sidebar.selectbox("販売集約", sorted_Syuyaku, key="syuyaku_select")
     raw_filtered = filter_data_sequentially(raw_filtered, selected_Syuyaku=selected_Syuyaku)
 
-    # フィルタ6: 選択された集約のうち、サイズを選択(ディフォルト設定は全表示[S, M, L])
+    # フィルタ6: 選択された集約のうち、サイズを選択
     sorted_Size = get_sorted_unique_values(raw_filtered, 'Size')
-    selected_Size = st.sidebar.multiselect("サイズ", sorted_Size, placeholder = "未入力の場合、全選択される")
+    selected_Size = st.sidebar.multiselect("サイズ", sorted_Size, placeholder = "未入力の場合、全選択される", key="size_select")
     raw_filtered = filter_data_sequentially(raw_filtered, selected_Size=selected_Size)
 
-    # フィルタ7: 選択された集約のうち、色を選択(ディフォルト設定は全表示[Color1, Color2])
+    # フィルタ7: 選択された集約のうち、色を選択
     sorted_Color = get_sorted_unique_values(raw_filtered, 'Color')
-    selected_Color = st.sidebar.multiselect("カラー", sorted_Color, placeholder = "未入力の場合、全選択される")    
+    selected_Color = st.sidebar.multiselect("カラー", sorted_Color, placeholder = "未入力の場合、全選択される", key="color_select")    
     raw_filtered = filter_data_sequentially(raw_filtered, selected_Color=selected_Color)
 
-    # フィルタ8: 選択された集約のうち、SKUを選択(ディフォルト設定は全表示[S, M, L] * [Color1, Color2])
+    # フィルタ8: 選択された集約のうち、SKUを選択
     sorted_SKU = get_sorted_unique_values(raw_filtered, 'SKU')
-    selected_SKU = st.sidebar.multiselect("SKU", sorted_SKU, placeholder = "未入力の場合、全選択される")
+    selected_SKU = st.sidebar.multiselect("SKU", sorted_SKU, placeholder = "未入力の場合、全選択される", key="sku_select")
     raw_filtered = filter_data_sequentially(raw_filtered, selected_SKU=selected_SKU)
 
     # 日付範囲の選択
@@ -69,6 +70,27 @@ if auth_status:
 
     # ユーザ操作によって、フィルタされたデータ
     raw_filtered = filter_data_sequentially(raw_filtered, start_date=start_date, end_date=end_date)
+
+    # Get unique product information for the selected Syuyaku
+    raw_unique = raw.unique(subset=['Department', 'Syuyaku', 'SKU', 'Color', 'Size', 'Length'])
+    ProductInfo = raw_unique.filter(pl.col('Syuyaku') == selected_Syuyaku)
+    ProductInfoDF = ProductInfo.to_pandas()
+    ProductInfoDF.columns = ['部門', '販売集約', '単品', 'カラー',  'サイズ',  'レングス']
+
+    # Filter summary tables for selected Syuyaku
+    AccuracySummaryDF = AccuracySummary.query('Syuyaku == @selected_Syuyaku').iloc[:, 1:]
+    ProblemSummaryDF = ProblemSummary.query('Syuyaku == @selected_Syuyaku').iloc[:, 1:]
+
+    st.title('商品属性情報')
+    ui.table(ProductInfoDF)
+
+    st.title("精度サマリ")
+    ui.table(AccuracySummaryDF)       
+    
+    st.title("既存課題検知結果サマリ")
+    ui.table(ProblemSummaryDF)
+    
+    st.title("課題検知のための情報の可視化")
 
     # Prepare data for visualization
     df_disp, df_real, df_pred = prepare_visualization_data(
