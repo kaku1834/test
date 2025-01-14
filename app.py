@@ -23,10 +23,6 @@ if auth_status:
     most_syuyaku_Brand, most_syuyaku_Region, most_syuyaku_Department, most_syuyaku_SubCategory, most_syuyaku = get_most_syuyaku(raw)
     
     # Your filtering code now uses the imported functions
-    sorted_Brand = get_sorted_unique_values(raw, 'Brand')
-    selected_Brand = st.sidebar.selectbox("グローバル事業", sorted_Brand, index = sorted_Brand.index(most_syuyaku_Brand))
-    raw_filtered = filter_data_sequentially(raw, selected_Brand=selected_Brand)
-
     # フィルタ1: 事業を選択
     sorted_Brand = get_sorted_unique_values(raw, 'Brand')
     selected_Brand = st.sidebar.selectbox("グローバル事業", sorted_Brand, index = sorted_Brand.index(most_syuyaku_Brand))
