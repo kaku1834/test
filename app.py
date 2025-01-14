@@ -72,7 +72,7 @@ if auth_status:
     raw_filtered = filter_data_sequentially(raw_filtered, start_date=start_date, end_date=end_date)
 
     # Get unique product information for the selected Syuyaku
-    raw_unique = raw.unique(subset=['Department', 'Syuyaku', 'SKU', 'Color', 'Size', 'Length']).select(['Department', 'Syuyaku', 'Tanpin', 'Color', 'Size', 'Length']))
+    raw_unique = raw.unique(subset=['Department', 'Syuyaku', 'SKU', 'Color', 'Size', 'Length']).select(['Department', 'Syuyaku', 'Tanpin', 'Color', 'Size', 'Length'])
     ProductInfo = raw_unique.filter(pl.col('Syuyaku') == selected_Syuyaku)
     ProductInfoDF = ProductInfo.to_pandas()
     ProductInfoDF.columns = ['部門', '販売集約', '単品', 'カラー',  'サイズ',  'レングス']
