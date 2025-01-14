@@ -101,6 +101,16 @@ if auth_status:
     size_cols = raw_filtered.select(pl.col("Size")).unique().to_series().to_list()
     color_cols = raw_filtered.select(pl.col("Color")).unique().to_series().to_list()
     
-    # Create and display visualization
-    fig = create_dashboard_figure(df_disp, df_real, df_pred, color_cols, size_cols)
-    st.pyplot(fig)
+    # Start timing
+    start_time = time.time()
+    
+    # Show loading spinner while creating visualization
+    with st.spinner('グラフを生成中...'):
+        # Create and display visualization
+        fig = create_dashboard_figure(df_disp, df_real, df_pred, color_cols, size_cols)
+        st.pyplot(fig)
+    
+    # Calculate and display processing time
+    end_time = time.time()
+    processing_time = end_time - start_time
+    st.caption(f"グラフ生成時間: {processing_time:.1f} 秒")
